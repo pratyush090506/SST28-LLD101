@@ -6,7 +6,11 @@ public class StudentRecord {
     public final String program;
 
     public StudentRecord(String id, String name, String email, String phone, String program) {
-        this.id = id; this.name = name; this.email = email; this.phone = phone; this.program = program;
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.program = program;
     }
 
     @Override
