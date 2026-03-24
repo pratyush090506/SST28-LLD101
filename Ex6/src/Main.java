@@ -1,6 +1,3 @@
-/**
- * Uses base NotificationSender contract only; no try/catch or instanceof.
- */
 public class Main {
     public static void main(String[] args) {
         System.out.println("=== Notification Demo ===");
@@ -14,10 +11,10 @@ public class Main {
 
         email.send(n);
         sms.send(n);
-
-        SendResult waResult = wa.send(n);
-        if (waResult.isError()) {
-            System.out.println("WA ERROR: " + waResult.getErrorMessage());
+        try {
+            wa.send(n);
+        } catch (RuntimeException ex) {
+            System.out.println("WA ERROR: " + ex.getMessage());
             audit.add("WA failed");
         }
 
