@@ -1,12 +1,17 @@
 import java.util.*;
 
-public class FakeDb implements StudentStore {
+public class FakeDb implements StudentRepository {
     private final List<StudentRecord> rows = new ArrayList<>();
 
-    @Override
-    public void save(StudentRecord r) { rows.add(r); }
-    @Override
-    public int count() { return rows.size(); }
-    @Override
-    public List<StudentRecord> all() { return Collections.unmodifiableList(rows); }
+    public void save(StudentRecord r) {
+        rows.add(r);
+    }
+
+    public int count() {
+        return rows.size();
+    }
+
+    public List<StudentRecord> all() {
+        return Collections.unmodifiableList(rows);
+    }
 }

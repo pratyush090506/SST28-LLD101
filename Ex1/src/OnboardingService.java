@@ -1,34 +1,38 @@
-/**
- * Orchestrates registration workflow: parse -> validate -> persist -> confirm.
- * No longer parses, validates, or formats output; uses composed components.
- */
-public class OnboardingService {
-    private final InputParser parser;
-    private final RegistrationValidator validator;
-    private final StudentStore store;
-    private final OnboardingPrinter printer;
+import java.util.*;
 
-    public OnboardingService(InputParser parser, RegistrationValidator validator,
-                             StudentStore store, OnboardingPrinter printer) {
-        this.parser = parser;
-        this.validator = validator;
-        this.store = store;
-        this.printer = printer;
+public class OnboardingService {
+    private final StudentRepository db;
+    private final InputParser parser = new InputParser();
+    private final StudentValidator validator = new StudentValidator();
+    private final OnboardingPrinter printer = new OnboardingPrinter();
+
+    public OnboardingService(StudentRepository db) {
+        this.db = db;
     }
 
+    // Intentionally violates SRP: parses + validates + creates ID + saves + prints.
     public void registerFromRawInput(String raw) {
-        ParsedRegistration parsed = parser.parse(raw);
         printer.printInput(raw);
+        Map<String, String> kv = parser.parse(raw);
 
-        ValidationResult result = validator.validate(parsed);
-        if (!result.isValid()) {
-            printer.printValidationErrors(result.getErrors());
+        String name = kv.getOrDefault("name", "");
+        String email = kv.getOrDefault("email", "");
+        String phone = kv.getOrDefault("phone", "");
+        String program = kv.getOrDefault("program", "");
+
+        // validation inline, printing inline
+        List<String> errors = validator.validate(name, email, phone, program);
+        if (!errors.isEmpty()) {
+            printer.printError(errors);
             return;
         }
 
-        String id = IdUtil.nextStudentId(store.count());
-        StudentRecord rec = new StudentRecord(id, parsed.name, parsed.email, parsed.phone, parsed.program);
-        store.save(rec);
-        printer.printSuccess(rec, store.count());
+        String id = IdUtil.nextStudentId(db.count());
+        StudentRecord rec = new StudentRecord(id, name, email, phone, program);
+
+        db.save(rec);
+        printer.printSuccess(rec);
+        printer.printSaved(db.count());
+        printer.printConfirmation(rec);
     }
 }
